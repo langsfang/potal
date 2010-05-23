@@ -36,17 +36,7 @@
 
 #define VLINE        0 
 #define HLINE        0
-
-static const char *fill  =  "++++++++++++++++++++++++++++++++++++++++\n"
-                            "++++++++++++++++++++++++++++++++++++++++\n"
-                            "++++++++++++++++++++++++++++++++++++++++\n"
-                            "++++++++++++++++++++++++++++++++++++++++\n"
-                            "++++++++++++++++++++++++++++++++++++++++\n"
-                            "++++++++++++++++++++++++++++++++++++++++\n"
-                            "++++++++++++++++++++++++++++++++++++++++\n"
-                            "++++++++++++++++++++++++++++++++++++++++\n"
-                            "++++++++++++++++++++++++++++++++++++++++\n"
-                            "++++++++++++++++++++++++++++++++++++++++\n";
+#define CARD_BACK    "+"
 
 #ifdef NCURSESW
 static const char *kind[4] = {
@@ -74,12 +64,17 @@ static void drawcard(WINDOW *w, int height, int width, CARD card, int status)
 {
     if (w == NULL) return;
 
+    int i, j;
     int color = 1;
     werase(w);
 
     switch (status) {
         case 0:
-            mvwprintw(w, 0, 0, fill);
+            for (i = 0; i < height; ++i) {
+                for (j = 0; j < width; ++j) {
+                    mvwprintw(w, i, j, CARD_BACK);
+                }
+            }
             break;
         case 1:
             switch (card.c) {
