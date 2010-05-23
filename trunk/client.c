@@ -89,6 +89,7 @@ static int connect_to_server(const char *ip, int port)
 static void send_msg(char cmd)
 {
     char send_msg[MAX_LEN+1];
+    send_msg[0] = '\0';
 
     switch (cmd) {
         case 'r':
@@ -106,29 +107,6 @@ static void send_msg(char cmd)
     }
 
     send(sock, send_msg, MAX_LEN, 0);
-}
-
-static void update()
-{
-    int i;
-
-    drawinfo();
-
-    for (i = 0; i < MAX_PLAYER; ++i) {
-        drawplayer(wplayer[i], i);
-    }
-
-    for (i = 0; i < NUM_PUBCARDS; ++i) {
-        drawpubcard(wcard[i], i);
-    }
-
-    if (mode == 0) { 
-        drawirc(wirc);
-        drawchip(wchip);
-    } else {
-        drawchip(wchip);
-        drawirc(wirc);
-    }
 }
 
 static void sig_alrm(int signo)
@@ -195,32 +173,12 @@ static void init_network(char *host, int port, char *name)
     }
 }
 
-static void clean_client()
-{
-    free(wirc->d[0]); free(wirc->d[1]);
-    free(wirc->t); free(wirc);
-
-    free(wchip);
-
-    int i;
-    for (i = 0; i < NUM_PUBCARDS; ++i) {
-        free(wcard[i]);
-    }
-    
-    for (i = 0; i < MAX_PLAYER; ++i) {
-        free(wplayer[i]->d[0]);
-        free(wplayer[i]->d[1]);
-        free(wplayer[i]->t);
-        free(wplayer[i]);
-    } 
-}
-
 
 static void sig_intr(int signo)
 {
     if (signo == SIGINT) {
+        clean_gui();
         endwin();
-        clean_client();
         exit(0);
     }
     return;
@@ -427,7 +385,7 @@ int main(int argc, char *argv[])
             }
         }
 
-        if (need_update) update();
+        if (need_update) update_gui();
     }
 
     return EXIT_SUCCESS;

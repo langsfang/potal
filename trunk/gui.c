@@ -458,4 +458,46 @@ void init_gui()
     initirc(&wirc);
 }
 
+void clean_gui()
+{
+    delwin(wirc->d[0]); delwin(wirc->d[1]);
+    delwin(wirc->t); free(wirc);
+
+    delwin(wchip);
+
+    int i;
+    for (i = 0; i < NUM_PUBCARDS; ++i) {
+        delwin(wcard[i]);
+    }
+    
+    for (i = 0; i < MAX_PLAYER; ++i) {
+        delwin(wplayer[i]->d[0]); 
+        delwin(wplayer[i]->d[1]);
+        delwin(wplayer[i]->t); 
+        free(wplayer[i]);
+    } 
+}
+
+void update_gui()
+{
+    int i;
+
+    drawinfo();
+
+    for (i = 0; i < MAX_PLAYER; ++i) {
+        drawplayer(wplayer[i], i);
+    }
+
+    for (i = 0; i < NUM_PUBCARDS; ++i) {
+        drawpubcard(wcard[i], i);
+    }
+
+    if (mode == 0) { 
+        drawirc(wirc);
+        drawchip(wchip);
+    } else {
+        drawchip(wchip);
+        drawirc(wirc);
+    }
+}
 
