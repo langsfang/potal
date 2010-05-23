@@ -69,7 +69,7 @@ static void sendtoall( char *c, int ex ){
             send(players[i].sock, c, MAX_LEN, 0);
         }
     }
-/*     printf("send to all msg is: %s\n", c); */
+    /*     printf("send to all msg is: %s\n", c); */
     return;
 }
 
@@ -132,7 +132,7 @@ static void server_init( int port ){
     }
 
     dealer = -1;
-   
+
     DEBUG_LOGGER( server_logger, "%s", "init server done");
 
     return;
@@ -146,16 +146,16 @@ static void fill_player_info(){
     int tag = 0;
     int i;
     for( i=0; i<MAX_PLAYER; i++ ){
-       if( players[i].sock != -1 ){
-           snprintf(m, MAX_LEN+1, "%d:%s:%d:%d:%d:%d:%d%d:%d%d,",
-                   players[i].player.id, players[i].player.name,
-                   players[i].player.money, players[i].player.bet,
-                   players[i].player.ready, players[i].player.fold,
-                   players[i].player.c1.c, players[i].player.c1.i,
-                   players[i].player.c2.c, players[i].player.c2.i);
-           strncat(msg, m, MAX_LEN);
-           tag++;
-       } 
+        if( players[i].sock != -1 ){
+            snprintf(m, MAX_LEN+1, "%d:%s:%d:%d:%d:%d:%d%d:%d%d,",
+                    players[i].player.id, players[i].player.name,
+                    players[i].player.money, players[i].player.bet,
+                    players[i].player.ready, players[i].player.fold,
+                    players[i].player.c1.c, players[i].player.c1.i,
+                    players[i].player.c2.c, players[i].player.c2.i);
+            strncat(msg, m, MAX_LEN);
+            tag++;
+        } 
     }
     if( tag != player_no )
         FATAL_LOGGER( server_logger, "%s", "player_no is not right");
@@ -257,27 +257,27 @@ err_hd:
 
 static int delete_player(int id, int a){
 
-	if( players[id].player.fold == 0 ){
-		playing--;
-	}
+    if( players[id].player.fold == 0 ){
+        playing--;
+    }
 
-	if( id == a ){
-		snprintf(msg, MAX_LEN+1, "b:-1");
-		sendtoall(msg, id);
-	}
-	snprintf(msg, MAX_LEN+1, "s:%s left\n", players[id].player.name);
-	sendtoall(msg, id);
-	snprintf(msg, MAX_LEN+1, "e:%d", id);
-	sendtoall(msg, id);
+    if( id == a ){
+        snprintf(msg, MAX_LEN+1, "b:-1");
+        sendtoall(msg, id);
+    }
+    snprintf(msg, MAX_LEN+1, "s:%s left\n", players[id].player.name);
+    sendtoall(msg, id);
+    snprintf(msg, MAX_LEN+1, "e:%d", id);
+    sendtoall(msg, id);
 
-	init_player( &players[id] );
-	player_no--;
+    init_player( &players[id] );
+    player_no--;
 
-	if( player_no == 0 )
-		return -2;
-	if( player_no == 1 )
-		return -1;
-	return 0;
+    if( player_no == 0 )
+        return -2;
+    if( player_no == 1 )
+        return -1;
+    return 0;
 }
 
 /* most of the time, we are in this function */
@@ -312,24 +312,24 @@ static int server_poll( int a ){
             for( i=1; i<MAX_PLAYER+1; i++ ){
                 if( pfd[i].revents & POLLIN ){
                     int id = i-1;
-		    DEBUG_LOGGER( server_logger, "player %d take an action", id);
+                    DEBUG_LOGGER( server_logger, "player %d take an action", id);
                     int n = recv( pfd[i].fd, msg, MAX_LEN, MSG_WAITALL);
                     if( n <= 0 ){
                         /* client closed? */
                         pfd[i].fd = -1;
-			if( id == a )
-			    tag = 0;
+                        if( id == a )
+                            tag = 0;
 
-			switch (delete_player(id, a)){
-		            case -2:
-			        return -2;
-			    case -1:
-			 	return -1;
-			    default:
-				continue;
-			}
+                        switch (delete_player(id, a)){
+                            case -2:
+                                return -2;
+                            case -1:
+                                return -1;
+                            default:
+                                continue;
+                        }
                     }
-		    DEBUG_LOGGER( server_logger, "received %s\n", msg);
+                    DEBUG_LOGGER( server_logger, "received %s\n", msg);
 
                     /* handle msg */
                     switch (msg[0]){
@@ -365,8 +365,8 @@ static int server_poll( int a ){
                                 dealer = id;
                             break;     
                         default:
-		            DEBUG_LOGGER( server_logger, "received unkown message");
-			    break;
+                            DEBUG_LOGGER( server_logger, "received unkown message");
+                            break;
                     }
                 }
             }
@@ -405,7 +405,7 @@ static int betting( void ){
         tag = 1;
     }else{
         i = next_player(current_high);
-	ori_pot = 0;
+        ori_pot = 0;
     }
 
     for (; i != current_high; i = (i+1)%MAX_PLAYER) {
@@ -434,8 +434,8 @@ static int betting( void ){
                 playing--;
                 snprintf(msg, MAX_LEN+1, "s:%s fold\n", players[i].player.name);
                 sendtoall(msg, -1);
-		if( playing == 1 )
-			return -1;
+                if( (playing + nallin)<=1 && (playing + sbd_allin)<=1)
+                    return -1;
             }
         } else {
             players[i].player.money -= b;
@@ -808,9 +808,10 @@ static int main_game( void ){
     for( i=1; i<5; i++ ){
         pot_round(i); 
         int ret = betting();
+        printf("playing = %d\tnallin = %d\n", playing, nallin);
         if ( ret == -2 ){
             return -1; /* goto init */
-        }else if ( ret == -1 ){
+        }else if ( ret == -1 && (playing + nallin) <= 1 ){
             break; /* goto result */
         }
         if( (playing + nallin) == 1 )
@@ -823,7 +824,7 @@ static void result( void ){
 
     whoiswin();
 }
-   
+
 int main(int argc, char *argv[])
 {
     int port = DEFAULT_PORT;
