@@ -73,13 +73,8 @@ static void unpack_playerinfo(char *msg, int unpack_id)
         count += 1;
     }
 
-    if (token[0] == '4') {
-        playerinfo[id].c2.c = -1;
-        playerinfo[id].c2.i = -1;
-    } else {
-        playerinfo[id].c2.c = token[0]-'0';
-        playerinfo[id].c2.i = atoi(token+1);
-    }
+    playerinfo[id].c2.c = token[0]-'0';
+    playerinfo[id].c2.i = atoi(token+1);
 }
 
 static void parse_g(char *msg)
@@ -103,13 +98,8 @@ static void parse_g(char *msg)
                 if (limit < 0) limit = 0;
                 break;
             case 3: case 4: case 5: case 6: case 7: 
-                if (token[0] == '4') {
-                    pubcard[count-3].c = -1;
-                    pubcard[count-3].i = -1;
-                } else {
-                    pubcard[count-3].c = token[0]-'0';
-                    pubcard[count-3].i = atoi(token+1);
-                }
+                pubcard[count-3].c = token[0]-'0';
+                pubcard[count-3].i = atoi(token+1);
                 break;
         }
 
@@ -167,13 +157,8 @@ static void parse_n(char *msg)
                 break;
             case 3: case 4: case 5: case 6: case 7: 
                 if (id == myid) {
-                    if (token[0] == '4') {
-                        pubcard[count-3].c = -1;
-                        pubcard[count-3].i = -1;
-                    } else {
-                        pubcard[count-3].c = token[0]-'0';
-                        pubcard[count-3].i = atoi(token+1);
-                    }
+                    pubcard[count-3].c = -1;
+                    pubcard[count-3].i = -1;
                 }
                 break;
         }
@@ -257,7 +242,6 @@ static void parse_m(char *msg)
 
 static void parse_s(char *msg)
 {
-
     _WIN_COLOR(pirc, 
         wprintw(pirc, "%s", msg); 
         , 5);
