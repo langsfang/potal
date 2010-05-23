@@ -80,65 +80,13 @@ struct layout {
 static const struct layout min_layout = {9, 14, 3, 5, 3, 7, 10};
 static struct layout layout = {12, 16, 8, 10, 3, 7, 20};
 
-
-static void get_min_size(struct layout layout, int *min_height, int *min_width)
-{
-    int min_h1 = 3*layout.player_height,
-        min_h2 = 2*layout.player_height+layout.pubcard_height+2,
-        min_h3 = layout.player_height+layout.pubcard_height+layout.chip_width+MAX_PLAYER+2;
-    _max_three(*min_height, min_h1, min_h2, min_h3);
-
-    int min_w1 = layout.irc_width+5*layout.pubcard_width+2*layout.player_width,
-        min_w2 = layout.irc_width+4*layout.player_width,
-        min_w3 = layout.irc_width+3*layout.player_width+layout.chip_width;
-    _max_three(*min_width, min_w1, min_w2, min_w3);
-}
-
-void init_curse()
-{
-    initscr();
-    cbreak();
-    nodelay(stdscr, TRUE);
-    keypad(stdscr, TRUE);
-    noecho();
-    curs_set(0);
-    refresh();
-
-    if (has_colors()) {
-        start_color();
-
-        init_pair(1, COLOR_RED,     COLOR_BLACK);
-        init_pair(2, COLOR_GREEN,   COLOR_BLACK);
-        init_pair(3, COLOR_YELLOW,  COLOR_BLACK);
-        init_pair(4, COLOR_BLUE,    COLOR_BLACK);
-        init_pair(5, COLOR_CYAN,    COLOR_BLACK);
-        init_pair(6, COLOR_MAGENTA, COLOR_BLACK);
-        init_pair(7, COLOR_WHITE,   COLOR_BLACK);
-    }
-
-    int min_height, min_width;
-    get_min_size(layout, &min_height, &min_width);
-
-    if (LINES < min_height || COLS < min_width) {
-        layout = min_layout;
-    }
-
-    get_min_size(layout, &min_height, &min_width);
-
-    if (LINES < min_height || COLS < min_width) {
-        endwin();
-        fprintf(stderr, "screen is too small\n");
-        fprintf(stderr, "min size: %d %d\n", min_height, min_width);
-        fprintf(stderr, "now size: %d %d\n", LINES, COLS);
-        exit(-1);
-    } 
-}
-
 static void drawcard(WINDOW *w, int height, int width, CARD card, int status)
 {
     if (w == NULL) return;
 
     int color = 1;
+    mvwprintw(w, 0, 0, empty);
+
     switch (status) {
         case 0:
             mvwprintw(w, 0, 0, fill);
@@ -158,18 +106,18 @@ static void drawcard(WINDOW *w, int height, int width, CARD card, int status)
                     color = 2;
                     break;
                 default:
-                    goto l_empty;
+                    goto fn_exit;
             }
             _WIN_COLOR(w,
                     mvwprintw(w, (height-1)/2, width/2-2, "%s%s", 
                         kind[card.c], num[card.i]);
                     , color);
             break;
-        case 2:
-l_empty:    mvwprintw(w, 0, 0, empty);
+        default:
             break;
     }
 
+fn_exit:    
     box(w, VLINE, HLINE);
     wrefresh(w);
 }
@@ -181,24 +129,31 @@ void drawinfo()
 
     curs_set(0);
 
+    mvprintw(starty, startx, empty);
     mvprintw(starty, startx, "pot: %d\n", pot);
     refresh();
 }
 
-void drawpubcard(WINDOW* w, int cdno)
+static void initpubcard(WINDOW **w, int cdno)
 {
     int startx, starty;
     int height = layout.pubcard_height, 
         width  = layout.pubcard_width;
 
-    curs_set(0);
-
     startx = (COLS-layout.irc_width)/2-NUM_PUBCARDS*width/2+width*cdno;
     starty = LINES/2-height/2; 
     
-    if (w == NULL) {
-        w = newwin(height, width, starty, startx);
-    }
+    *w = newwin(height, width, starty, startx);
+}
+
+void drawpubcard(WINDOW *w, int cdno)
+{
+    int startx, starty;
+    int height = layout.pubcard_height, 
+        width  = layout.pubcard_width;
+
+    if (w == NULL) return;
+    curs_set(0);
 
     int status = 1;
     if (pubcard[cdno].c == 4) {
@@ -208,14 +163,12 @@ void drawpubcard(WINDOW* w, int cdno)
     drawcard(w, height, width, pubcard[cdno], status);
 }
 
-void drawplayer(struct WIN2 *w, int plno)
+static void initplayer(struct WIN2 **w, int plno)
 {
     int startx, starty;
     int height = layout.player_height, 
         width  = layout.player_width;
 
-    curs_set(0);
-    
     switch (plno) {
         case 0:
             startx = (COLS-layout.irc_width)/2-width;
@@ -237,12 +190,22 @@ void drawplayer(struct WIN2 *w, int plno)
    
     int card_height = height-6, card_width = width/2;
 
-    if (w == NULL) {
-        w = malloc(sizeof(struct WIN2)); 
-        w->t = newwin(height, width, starty, startx);
-        w->d[0] = derwin(w->t, card_height, card_width, 2, 0);
-        w->d[1] = derwin(w->t, card_height, card_width, 2, width-width/2);
-    } 
+    *w = malloc(sizeof(struct WIN2)); 
+
+    (*w)->t = newwin(height, width, starty, startx);
+    (*w)->d[0] = derwin((*w)->t, card_height, card_width, 2, 0);
+    (*w)->d[1] = derwin((*w)->t, card_height, card_width, 2, width-width/2);
+}
+
+void drawplayer(struct WIN2 *w, int plno)
+{
+    int height = layout.player_height, 
+        width  = layout.player_width;
+
+    int card_height = height-6, card_width = width/2;
+
+    if (w == NULL) return;
+    curs_set(0);
 
     WINDOW *t = w->t;
     WINDOW *d[2];
@@ -251,8 +214,8 @@ void drawplayer(struct WIN2 *w, int plno)
     int id = seat[plno];
 
     /* draw basic status */
+    mvwprintw(t, 0, 0, empty);
     if (id == -1) {
-        mvwprintw(t, 0, 0, empty);
         wrefresh(t);
         return;
     }
@@ -354,21 +317,27 @@ void drawplayer(struct WIN2 *w, int plno)
     wrefresh(t);
 }
 
-void drawchip(WINDOW *w)
+static void initchip(WINDOW **w)
 {
     int startx, starty;
     int height = layout.chip_height, 
         width  = layout.chip_width;
 
-    curs_set(1);
-
     startx = (COLS-layout.irc_width)/2+1;
     starty = LINES-height-3;
 
-    if (w == NULL) {
-        w = newwin(height, width, starty, startx);
-    } 
+    (*w) = newwin(height, width, starty, startx);
+}
 
+void drawchip(WINDOW *w)
+{
+    int height = layout.chip_height, 
+        width  = layout.chip_width;
+
+    if (w == NULL) return;
+    curs_set(1);
+
+    mvwprintw(w, 1, 1, empty);
     mvwprintw(w, 1, 1, "%d", chipin);
     int color = (mode == 0) ? 1 : 0;
     _WIN_COLOR(w,
@@ -376,6 +345,22 @@ void drawchip(WINDOW *w)
             , color);
 
     wrefresh(w);
+}
+
+static void initirc(struct WIN2 **w)
+{
+    int startx = COLS-layout.irc_width;
+    int starty = 0;
+    int height = LINES,
+        width  = layout.irc_width;
+
+    *w = malloc(sizeof(struct WIN2)); 
+    (*w)->t = newwin(height, width, starty, startx);
+    (*w)->d[0] = derwin((*w)->t, height-3, width, 0, 0);
+    (*w)->d[1] = derwin((*w)->t, 3, width, LINES-3, 0);
+
+    pirc = newpad(height-5, width-2);
+    scrollok(pirc, TRUE);
 }
 
 void drawirc(struct WIN2 *w)
@@ -387,23 +372,14 @@ void drawirc(struct WIN2 *w)
 
     curs_set(1);
 
-    if (w == NULL) {
-        w = malloc(sizeof *w); 
-        w->t = newwin(height, width, starty, startx);
-        w->d[0] = derwin(w->t, height-3, width, 0, 0);
-        w->d[1] = derwin(w->t, 3, width, LINES-3, 0);
-    }
-
-    if (pirc == NULL ){
-        pirc = newpad(height-5, width-2);
-        scrollok(pirc, TRUE);
-    }
+    if (w == NULL || pirc == NULL) return;
 
     WINDOW *d[2];
     d[0] = w->d[0]; d[1] = w->d[1];
 
     int index = strlen(ircmsg)-width+2+1;
     if (index < 0) index = 0;
+    mvwprintw(d[1], 1, 1, empty);
     mvwprintw(d[1], 1, 1, ircmsg+index);
 
     box(d[0], VLINE, HLINE);
@@ -416,4 +392,70 @@ void drawirc(struct WIN2 *w)
     prefresh(pirc, 0, 0, starty+1, startx+1, starty+height-5, startx+width-2);
     wrefresh(d[1]);
 }
+
+static void get_min_size(struct layout layout, int *min_height, int *min_width)
+{
+    int min_h1 = 3*layout.player_height,
+        min_h2 = 2*layout.player_height+layout.pubcard_height+2,
+        min_h3 = layout.player_height+layout.pubcard_height+layout.chip_width+MAX_PLAYER+2;
+    _max_three(*min_height, min_h1, min_h2, min_h3);
+
+    int min_w1 = layout.irc_width+5*layout.pubcard_width+2*layout.player_width,
+        min_w2 = layout.irc_width+4*layout.player_width,
+        min_w3 = layout.irc_width+3*layout.player_width+layout.chip_width;
+    _max_three(*min_width, min_w1, min_w2, min_w3);
+}
+
+void init_gui()
+{
+    initscr();
+    cbreak();
+    nodelay(stdscr, TRUE);
+    keypad(stdscr, TRUE);
+    noecho();
+    curs_set(0);
+    refresh();
+
+    if (has_colors()) {
+        start_color();
+
+        init_pair(1, COLOR_RED,     COLOR_BLACK);
+        init_pair(2, COLOR_GREEN,   COLOR_BLACK);
+        init_pair(3, COLOR_YELLOW,  COLOR_BLACK);
+        init_pair(4, COLOR_BLUE,    COLOR_BLACK);
+        init_pair(5, COLOR_CYAN,    COLOR_BLACK);
+        init_pair(6, COLOR_MAGENTA, COLOR_BLACK);
+        init_pair(7, COLOR_WHITE,   COLOR_BLACK);
+    }
+
+    int min_height, min_width;
+    get_min_size(layout, &min_height, &min_width);
+
+    if (LINES < min_height || COLS < min_width) {
+        layout = min_layout;
+    }
+
+    get_min_size(layout, &min_height, &min_width);
+
+    if (LINES < min_height || COLS < min_width) {
+        endwin();
+        fprintf(stderr, "screen is too small\n");
+        fprintf(stderr, "min size: %d %d\n", min_height, min_width);
+        fprintf(stderr, "now size: %d %d\n", LINES, COLS);
+        exit(-1);
+    }
+
+    int i;
+    for (i = 0; i < MAX_PLAYER; ++i) {
+        initplayer(&wplayer[i], i);
+    }
+
+    for (i = 0; i < NUM_PUBCARDS; ++i) {
+        initpubcard(&wcard[i], i);
+    }
+
+    initchip(&wchip);
+    initirc(&wirc);
+}
+
 
