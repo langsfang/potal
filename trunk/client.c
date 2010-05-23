@@ -328,7 +328,7 @@ static void keymod1()
 static void usage()
 {
     fprintf(stderr, "usage: client -s server [-p port] -n username\n");
-    fprintf(stderr, "If you configured client with ncursesw, please make sure your locale is UTF-8\n");
+    fprintf(stderr, "If you configured with ncursesw, please make sure your locale is UTF-8\n");
     exit(1);
 }
 
