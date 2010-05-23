@@ -47,16 +47,6 @@ static const char *fill  =  "++++++++++++++++++++++++++++++++++++++++\n"
                             "++++++++++++++++++++++++++++++++++++++++\n"
                             "++++++++++++++++++++++++++++++++++++++++\n"
                             "++++++++++++++++++++++++++++++++++++++++\n";
-static const char *empty =  "                                        \n"
-                            "                                        \n"
-                            "                                        \n"
-                            "                                        \n"
-                            "                                        \n"
-                            "                                        \n"
-                            "                                        \n"
-                            "                                        \n"
-                            "                                        \n"
-                            "                                        \n";
 
 #ifdef NCURSESW
 static const char *kind[4] = {
@@ -85,7 +75,7 @@ static void drawcard(WINDOW *w, int height, int width, CARD card, int status)
     if (w == NULL) return;
 
     int color = 1;
-    mvwprintw(w, 0, 0, empty);
+    werase(w);
 
     switch (status) {
         case 0:
@@ -129,8 +119,7 @@ void drawinfo()
 
     curs_set(0);
 
-    mvprintw(starty, startx, empty);
-    mvprintw(starty, startx, "pot: %d\n", pot);
+    mvprintw(starty, startx, "pot: %6d\n", pot);
     refresh();
 }
 
@@ -214,7 +203,7 @@ void drawplayer(struct WIN2 *w, int plno)
     int id = seat[plno];
 
     /* draw basic status */
-    mvwprintw(t, 0, 0, empty);
+    werase(t);
     if (id == -1) {
         wrefresh(t);
         return;
@@ -311,7 +300,8 @@ void drawplayer(struct WIN2 *w, int plno)
     } else if (nwin < 0 && playerinfo[id].ready != 3) {
         mvwprintw(t, height-1, 0, "all fold");
     } else {
-        mvwprintw(t, height-2, 0, empty);
+        mvwprintw(t, height-2, 0, " ");
+        wclrtoeol(t);
     }
 
     wrefresh(t);
@@ -337,7 +327,7 @@ void drawchip(WINDOW *w)
     if (w == NULL) return;
     curs_set(1);
 
-    mvwprintw(w, 1, 1, empty);
+    werase(w);
     mvwprintw(w, 1, 1, "%d", chipin);
     int color = (mode == 0) ? 1 : 0;
     _WIN_COLOR(w,
@@ -379,7 +369,7 @@ void drawirc(struct WIN2 *w)
 
     int index = strlen(ircmsg)-width+2+1;
     if (index < 0) index = 0;
-    mvwprintw(d[1], 1, 1, empty);
+    werase(d[1]);
     mvwprintw(d[1], 1, 1, ircmsg+index);
 
     box(d[0], VLINE, HLINE);
