@@ -1,0 +1,4 @@
++ code cleanup
++ replace send/recv by write/read, and set all socket fd to no delay.
++ better protocol between server and client(maybe xml or json?)
++ better parsing
