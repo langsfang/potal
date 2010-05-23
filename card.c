@@ -80,7 +80,7 @@ static void isNumkind(int *r, CARD *x)
 
 	int i = 0, j = 0, k = 0, m = 0, n = 0;
 
-    int r4[NUM_PUBCARDS+2]; r4[6] = -1;
+    int r4[NUM_PUBCARDS+2]; r4[0] = 0; r4[6] = -1;
 
 	int card_stat[NUM_CARDS+1][2];
     memset(card_stat, 0, 2*(NUM_CARDS+1)*sizeof(int));

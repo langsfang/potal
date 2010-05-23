@@ -238,11 +238,11 @@ static void parse_m(char *msg)
 
     token = strtok(msg, ":");
     _WIN_COLOR(pirc, 
-        wprintw(pirc, "%s:\n", token); 
-        , 3);
+            wprintw(pirc, "%s:\n", token); 
+            , 3);
 
     token = strtok(NULL, "\0");
-        wprintw(pirc, "%s", token); 
+    wprintw(pirc, "%s", token); 
 
     if (mode == 0) {
         drawirc(wirc);
