@@ -154,10 +154,16 @@ void init_vars()
 {
     int i;
 
-    mode = 0; turn = -1; nwin = 0; rtime = 0;
+    mode = 0; turn = -1; nwin = 0;
+    rtime = 0; chipin = 0;
 
     for (i = 0; i < MAX_PLAYER; ++i) {
-        win[i]   = 0;
+        seat[i] = -1; win[i] = 0;
+    }
+    
+    for (i = 0; i < NUM_PUBCARDS; ++i) {
+        pubcard[i].c = 4;
+        pubcard[i].i = 0;
     }
 
     memset(ircmsg, MAX_LEN+1, '\0');
@@ -189,10 +195,32 @@ static void init_network(char *host, int port, char *name)
     }
 }
 
+static void clean_client()
+{
+    free(wirc->d[0]); free(wirc->d[1]);
+    free(wirc->t); free(wirc);
+
+    free(wchip);
+
+    int i;
+    for (i = 0; i < NUM_PUBCARDS; ++i) {
+        free(wcard[i]);
+    }
+    
+    for (i = 0; i < MAX_PLAYER; ++i) {
+        free(wplayer[i]->d[0]);
+        free(wplayer[i]->d[1]);
+        free(wplayer[i]->t);
+        free(wplayer[i]);
+    } 
+}
+
+
 static void sig_intr(int signo)
 {
     if (signo == SIGINT) {
         endwin();
+        clean_client();
         exit(0);
     }
     return;
@@ -203,24 +231,22 @@ static void init_client()
     setlocale(LC_ALL, "");
 
     init_vars();
-    init_curse();
-
+    init_gui();
+   
     if (signal(SIGALRM, sig_alrm) == SIG_ERR)
         perror("signa error");
-
 
     if (signal(SIGINT, sig_intr) == SIG_ERR) {
         fprintf(stderr, "SIG_ERR\n");
     }
 
-    update();
     char msg[MAX_LEN+1] = "m:Usage:-----\nTAB -\n   "
 	    		  "Switch between    bet window and    chat-window\n"
-			  "r/R -\n   "
-			  "Ready for star-   ting game\n"
-			  "f/F -\n   Fold\n"
-			  "Ctrl+C -\n   "
-			  "Leave the game\n-----\n";
+                  "r/R -\n   "
+                  "Ready for star-   ting game\n"
+                  "f/F -\n   Fold\n"
+                  "Ctrl+C -\n   "
+                  "Leave the game\n-----\n";
     parse(msg);
 }
 
