@@ -22,7 +22,7 @@
 
 #include "client.h"
 
-void init_curse();
+void init_gui();
 void drawinfo();
 void drawpubcard(WINDOW* w, int cdno);
 void drawplayer(struct WIN2 *w, int plno);
