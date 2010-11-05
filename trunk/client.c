@@ -290,7 +290,7 @@ static void keymod1()
 
     switch (c) {
         case BACKSPACE:
-	case KEY_BACKSPACE:
+        case KEY_BACKSPACE:
             i = strlen(ircmsg);
             if (i != 0) ircmsg[i-1] = '\0';
             drawirc(wirc);
