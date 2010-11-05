@@ -210,8 +210,15 @@ static void parse_n(char *msg)
 
 static void parse_t(char *msg)
 {
-    turn = atoi(msg);
+    int id = atoi(msg);
+
+    if (gaming == 1) {
+        timing[turn] = 0;
+        turn = id;
+    }
+
     rtime = 10;
+    timing[id] = 1;
     alarm(TIMER);
 
     need_update = 1;
@@ -323,6 +330,7 @@ static void parse_w(char *msg)
     for (i = 0;i < MAX_PLAYER; ++i) {
         playerinfo[i].ready = (playerinfo[i].money < 10) ? 3 : 0;
         playerinfo[i].bet = 0;
+        timing[i] = 0;
     } 
 
     chipin = 0;
@@ -343,6 +351,7 @@ static void parse_r(char *msg)
         gaming = 1;
     } else {
         playerinfo[id].ready = 1;
+        timing[id] = 0;
         _WIN_COLOR(pirc, 
                 wprintw(pirc, "%s is ready\n", playerinfo[id].name); 
                 , 6);

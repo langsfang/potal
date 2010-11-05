@@ -364,11 +364,16 @@ static int server_poll( int a ){
                             snprintf(msg, MAX_LEN+1, "r:%d", id);
                             sendtoall( msg, -1 );
 
-                            if( playing >= 2 )
-                            for( i=0; i<MAX_PLAYER; i++ ){
-                                if( players[i].sock != -1 && players[i].player.ready != 1){
-                                    snprintf(msg, MAX_LEN+1, "t:%d", i);
-                                    sendtoall(msg, -1);
+                            if( playing >= 2 ) {
+                                //DEBUG
+                                fprintf(stderr, "playing : %d\n", playing);
+                                for( i=0; i<MAX_PLAYER; i++ ){
+                                    if( players[i].sock != -1 && players[i].player.ready != 1){
+                                        snprintf(msg, MAX_LEN+1, "t:%d", i);
+                                        // DEBUG                                    
+                                        fprintf(stderr, "%s\n", msg);
+                                        sendtoall(msg, -1);
+                                    }
                                 }
                             }
 
