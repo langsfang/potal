@@ -31,7 +31,7 @@
         {\
             _statments\
         }\
-        wattrset(win, COLOR_PAIR(0));\
+        wattrset(win, COLOR_PAIR(7));\
     } while (0)
 
 struct WIN2 {

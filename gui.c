@@ -114,7 +114,16 @@ void drawinfo()
 
     curs_set(0);
 
-    mvprintw(starty, startx, "pot: %6d\n", pot);
+    move(starty, 0);
+
+    int i;
+    for (i = 0; i < startx; ++i) {
+        _WIN_COLOR(stdscr,
+                addch(' ');
+                , 8);
+    }
+
+    printw("pot: %d\n", pot);
     refresh();
 }
 
@@ -411,6 +420,7 @@ void init_gui()
         init_pair(5, COLOR_CYAN,    COLOR_BLACK);
         init_pair(6, COLOR_MAGENTA, COLOR_BLACK);
         init_pair(7, COLOR_WHITE,   COLOR_BLACK);
+        init_pair(8, COLOR_BLACK,   COLOR_BLACK);
     }
 
     int min_height, min_width;
@@ -429,6 +439,9 @@ void init_gui()
         fprintf(stderr, "now size: %d %d\n", LINES, COLS);
         exit(-1);
     }
+
+    attrset(COLOR_PAIR(7));
+    bkgd(' ');
 
     int i;
     for (i = 0; i < MAX_PLAYER; ++i) {
