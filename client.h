@@ -54,6 +54,7 @@ extern char ircmsg[MAX_LEN+1];
 
 extern WINDOW *wchip;
 extern int chipin;
+extern int gaming;
 
 extern WINDOW *wcard[NUM_PUBCARDS];
 extern CARD pubcard[NUM_PUBCARDS];
