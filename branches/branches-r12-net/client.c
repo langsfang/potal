@@ -49,6 +49,7 @@ struct WIN2 *wplayer[MAX_PLAYER];
 PLE_BASE playerinfo[MAX_PLAYER];
 int seat[MAX_PLAYER];
 int win[MAX_PLAYER];
+int timing[MAX_PLAYER];
 
 struct WIN2 *wirc;
 WINDOW *pirc;
@@ -113,14 +114,16 @@ static void send_msg(char cmd)
 static void sig_alrm(int signo)
 {
     if (--rtime == 0) {
-        if (myid == turn) {
+        if (timing[myid]) {
             if( gaming ){
                 chipin = -1;
                 send_msg('b');
                 chipin = 0;
             }else{
                 close(sock);
-                _exit(0);
+                clean_gui();
+                endwin();
+                exit(0);
             }
         }
         alarm(0);
@@ -139,10 +142,10 @@ void init_vars()
     int i;
 
     mode = 0; turn = -1; nwin = 0;
-    rtime = 0; chipin = 0;
+    rtime = 0; chipin = 0; rtime = 10;
 
     for (i = 0; i < MAX_PLAYER; ++i) {
-        seat[i] = -1; win[i] = 0;
+        seat[i] = -1; win[i] = 0; timing[i] = 0;
     }
     
     for (i = 0; i < NUM_PUBCARDS; ++i) {

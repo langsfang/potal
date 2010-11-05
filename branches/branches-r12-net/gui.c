@@ -254,7 +254,7 @@ void drawplayer(struct WIN2 *w, int plno)
     mvwprintw(t, height-3, 0, "%c", '[');
     int i;
     for (i = 1; i <= 10 ; ++i) {
-        if (id == turn && i <= rtime) {
+        if (timing[id] && i <= rtime) {
             color = (rtime <= 5) ? 1 : 0;
             _WIN_COLOR(t,
                     mvwprintw(t, height-3, i, "%c", '#');

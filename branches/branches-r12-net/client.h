@@ -47,6 +47,7 @@ extern struct WIN2 *wplayer[MAX_PLAYER];
 extern PLE_BASE playerinfo[MAX_PLAYER];
 extern int seat[MAX_PLAYER];
 extern int win[MAX_PLAYER];
+extern int timing[MAX_PLAYER];
 
 extern struct WIN2 *wirc;
 extern WINDOW *pirc;
