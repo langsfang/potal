@@ -257,11 +257,13 @@ err_hd:
 
 static int delete_player(int id, int a){
 
+    printf("in deleting player\n");
     if( players[id].player.fold == 0 ){
         playing--;
     }
 
     if( id == a ){
+        printf("not send b\n");
         snprintf(msg, MAX_LEN+1, "b:-1");
         sendtoall(msg, id);
     }
@@ -361,6 +363,15 @@ static int server_poll( int a ){
                             playing++;
                             snprintf(msg, MAX_LEN+1, "r:%d", id);
                             sendtoall( msg, -1 );
+
+                            if( playing >= 2 )
+                            for( i=0; i<MAX_PLAYER; i++ ){
+                                if( players[i].sock != -1 && players[i].player.ready != 1){
+                                    snprintf(msg, MAX_LEN+1, "t:%d", i);
+                                    sendtoall(msg, -1);
+                                }
+                            }
+
                             if( dealer == -1 )
                                 dealer = id;
                             break;     

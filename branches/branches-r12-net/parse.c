@@ -327,6 +327,7 @@ static void parse_w(char *msg)
 
     chipin = 0;
     turn = -1;
+    gaming = 0;
 
     allow_send_ready = 1;
     need_update = 1;
@@ -339,6 +340,7 @@ static void parse_r(char *msg)
 
     if (id == -1) {
         init_vars();
+        gaming = 1;
     } else {
         playerinfo[id].ready = 1;
         _WIN_COLOR(pirc, 

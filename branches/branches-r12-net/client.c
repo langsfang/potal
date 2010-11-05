@@ -56,6 +56,7 @@ char ircmsg[MAX_LEN+1];
 
 WINDOW *wchip;
 int chipin;
+int gaming = 0;
 
 WINDOW *wcard[NUM_PUBCARDS];
 CARD pubcard[NUM_PUBCARDS];
@@ -113,9 +114,14 @@ static void sig_alrm(int signo)
 {
     if (--rtime == 0) {
         if (myid == turn) {
-            chipin = -1;
-            send_msg('b');
-            chipin = 0;
+            if( gaming ){
+                chipin = -1;
+                send_msg('b');
+                chipin = 0;
+            }else{
+                close(sock);
+                _exit(0);
+            }
         }
         alarm(0);
     } else {
@@ -322,9 +328,17 @@ int main(int argc, char *argv[])
     char name[MAX_NAME+1];    
     int port = DEFAULT_PORT;
    
-    if (argc < 5) { 
-        usage();
+/*     if (argc < 5) {  */
+/*         usage();     */
+/*     }                */
+
+    memset(name, 0, MAX_NAME+1);
+    while( name[0] == 0 ){
+        printf("Please Input Your Name:\n");
+        fgets(name, MAX_NAME, stdin);
+        name[strlen(name)-1] = '\0';
     }
+/*     printf("you name is %s\n", name); */
 
     while (1) {
         opterr = 0;
@@ -334,9 +348,9 @@ int main(int argc, char *argv[])
             case 's':
                 strncpy(server, optarg, MAX_LEN+1);
                 break;
-            case 'n':
-                strncpy(name, optarg, MAX_NAME+1);
-                break;
+/*             case 'n':                              */
+/*                 strncpy(name, optarg, MAX_NAME+1); */
+/*                 break;                             */
             case 'p':
                 port = atoi(optarg);
                 break;
