@@ -309,6 +309,19 @@ static int server_poll( int a ){
             /* create new player */
             create_player( connfd, a );
 
+            if( playing >= 2 ) {
+                //DEBUG
+                fprintf(stderr, "playing : %d\n", playing);
+                int i;
+                for( i=0; i<MAX_PLAYER; i++ ){
+                    if( players[i].sock != -1 && players[i].player.ready != 1){
+                        snprintf(msg, MAX_LEN+1, "t:%d", i);
+                        // DEBUG                                    
+                        fprintf(stderr, "%s\n", msg);
+                        sendtoall(msg, -1);
+                    }
+                }
+            }
         }else{
             int i;
             for( i=1; i<MAX_PLAYER+1; i++ ){
