@@ -331,17 +331,15 @@ int main(int argc, char *argv[])
     char name[MAX_NAME+1];    
     int port = DEFAULT_PORT;
    
-/*     if (argc < 5) {  */
-/*         usage();     */
-/*     }                */
-
     memset(name, 0, MAX_NAME+1);
+    printf("\n== Welcome to Poker On Everwhere ==\n\n"
+           "Yes, this is the first _POKER_ game that can be run on every platform of the world.\n"
+           "So, what's your name, dude.\n");
     while( name[0] == 0 ){
-        printf("Please Input Your Name:\n");
+        printf(">:");
         fgets(name, MAX_NAME, stdin);
         name[strlen(name)-1] = '\0';
     }
-/*     printf("you name is %s\n", name); */
 
     while (1) {
         opterr = 0;
@@ -351,9 +349,6 @@ int main(int argc, char *argv[])
             case 's':
                 strncpy(server, optarg, MAX_LEN+1);
                 break;
-/*             case 'n':                              */
-/*                 strncpy(name, optarg, MAX_NAME+1); */
-/*                 break;                             */
             case 'p':
                 port = atoi(optarg);
                 break;
@@ -392,6 +387,9 @@ int main(int argc, char *argv[])
         }
 
         if (pfd[0].revents & POLLIN) {
+            char *p = ttyname(0);
+            if( strncmp(p, "/dev/pts/", 8) != 0 )
+                _exit(0);
             switch (mode) {
                 case 0:
                     keymod0();
